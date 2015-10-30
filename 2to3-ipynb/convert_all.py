@@ -18,6 +18,7 @@ def main(argv):
             if file_extension == ".py":
                 full_path = os.path.join(subdir, file)
                 print("found python file:",full_path)
+                ipy.convert_py_file(full_path)
             elif file_extension == ".ipynb":
                 full_path = os.path.join(subdir, file)
                 print("found IPython notebook:",full_path)

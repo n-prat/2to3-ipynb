@@ -90,6 +90,9 @@ def convert_ipynb_json(ipynb_json):
 
     return 0
 
+
+
+
 # reset cmd2to3
 def init_cmd():
     global cmd2to3
@@ -106,6 +109,9 @@ def init_cmd():
     cmd2to3.append(path2to3)
 
     return 0
+
+
+
 
 def find_2to3():
     global path2to3
@@ -155,6 +161,9 @@ def find_2to3():
 
     return 0
 
+
+
+
 def cell_name_compatibility(ipy_json):
     global code_cell_name
     global nb_version
@@ -175,6 +184,9 @@ def cell_name_compatibility(ipy_json):
 
     return 0
 
+
+
+
 def init_path():
 
     # we search the path of 2to3 and write it in a global variable
@@ -185,6 +197,9 @@ def init_path():
     print("cmd2to3:",cmd2to3)
 
     return 0
+
+
+
 
 def convert_ipynb_file(file_path):  
 
@@ -205,6 +220,29 @@ def convert_ipynb_file(file_path):
         json.dump(ipy_json, ostream)
 
     return 0
+
+
+
+
+def convert_py_file(file_path):  
+
+    init_path()    
+    init_cmd()
+
+    # simpler with basic py files :
+    # we just call 2to3
+    # note : we are working on a local copy of "cmd2to3"
+    cmd2to3.append("--nobackups")
+    cmd2to3.append("--write")
+    cmd2to3.append(file_path)
+
+    # we can now call 2to3 on the content
+    # do not show the output
+    subprocess.check_call(cmd2to3, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+
+    return 0
+
+
 
 
 def main(argv): 
