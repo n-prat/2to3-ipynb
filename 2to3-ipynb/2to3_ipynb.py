@@ -169,10 +169,15 @@ def main(argv):
     nb_version = ipy_json['nbformat']
     if nb_version == 4:
         code_cell_name = 'source'
-    else:
+    elif nb_version <= 3:
          code_cell_name = 'input'
+    else:
+        # we can try and suppose it could work
+        code_cell_name = 'source'
+        print("WARNING Unsupported Notebook version:",nb_version)
+        print("IT MAY NOT WORK")
 
-    print("Notebook version:",nb_version,"code cells:",code_cell_name)
+    print("Notebook version:",nb_version)
 
     # now we convert the json file with 2to3
     convert_ipynb(ipy_json)
