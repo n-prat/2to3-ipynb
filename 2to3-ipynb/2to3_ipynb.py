@@ -14,6 +14,7 @@ import inspect
 # global variable to store the path of 2to3
 path2to3 = ""
 cmd2to3 = []
+code_cell_name = ""
 
 def is_python_code_cell(cell):
     return cell['cell_type'] == "code"
@@ -44,13 +45,13 @@ def convert_ipynb(ipynb_file):
        #code = c['source'] #CHECK        
 
         # remove the magic lines
-        magic = replace_magic_lines(c['source'])
+        magic = replace_magic_lines(c[code_cell_name])
 
         #print(code) #DEBUG
         file_name = None
         with tempfile.NamedTemporaryFile(
                     mode = "w", delete = False) as ostream:                    
-                ostream.writelines(c['source']) 
+                ostream.writelines(c[code_cell_name]) 
                 file_name = ostream.name   
                 #print(file_name) #DEBUG
 
@@ -65,7 +66,7 @@ def convert_ipynb(ipynb_file):
 
         # write back the converted content
         with io.open(file_name, mode = "r") as istream:
-                c['source'] = istream.readlines()
+                c[code_cell_name] = istream.readlines()
 
         # put the magic lines back in place
         for i, line in magic:
@@ -147,6 +148,8 @@ def find_2to3():
 
 # TODO take care of line endings (win vs linux)
 def main(argv):
+    global code_cell_name
+
     if len(argv) != 3:        
         print("Usage: {} fromfile.ipynb tofile.ipynb".format(argv[0]))        
         return 1
@@ -154,16 +157,27 @@ def main(argv):
     # we search the path of 2to3 and write it in a global variable
     find_2to3()
 
+    # checks
     print("path2to3:",path2to3)
     print("cmd2to3:",cmd2to3)
     
     ipy_json = None
     with io.open(argv[1], mode = "r") as istream:
         ipy_json = json.load(istream)
+        
+    # compatibility between Notebooks v4+ and v3-
+    nb_version = ipy_json['nbformat']
+    if nb_version == 4:
+        code_cell_name = 'source'
+    else:
+         code_cell_name = 'input'
 
-    #convert_ipy2to3(ipy_json) #DEBUG
+    print("Notebook version:",nb_version,"code cells:",code_cell_name)
+
+    # now we convert the json file with 2to3
     convert_ipynb(ipy_json)
 
+    # and write it back to disk when it is done
     with io.open(argv[2], mode = "w") as ostream:
         json.dump(ipy_json, ostream)
     return 0
