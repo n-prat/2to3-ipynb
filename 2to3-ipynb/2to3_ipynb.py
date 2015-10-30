@@ -62,7 +62,7 @@ def convert_ipynb(ipynb_file):
         cmd2to3.append(file_name)
 
         # we can now call 2to3 on the content
-        subprocess.check_output(cmd2to3)
+        subprocess.check_call(cmd2to3, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
 
         # write back the converted content
         with io.open(file_name, mode = "r") as istream:
