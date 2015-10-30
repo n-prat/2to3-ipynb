@@ -35,17 +35,19 @@ def replace_magic_lines(lines):
             lines[i] = "\n"
     return magic_lines
 
-def convert_ipynb(ipynb_file):
+# convert an ipynb json
+def convert_ipynb_json(ipynb_json):
     code_cells = []
+    init_cmd() # needed because without it, we append at each function call
 
     # we filter out everything except code cells
     if nb_version >= 4:
-        code_cells = filter(is_python_code_cell, ipynb_file['cells'])
+        code_cells = filter(is_python_code_cell, ipynb_json['cells'])
     else:
-        for worksheet in ipynb_file['worksheets']: 
+        for worksheet in ipynb_json['worksheets']: 
             code_cells_temp = filter(is_python_code_cell, worksheet['cells']) 
             for cell in code_cells_temp:
-                print(cell)
+                #print(cell)
                 code_cells.append(cell)
 
     # we loop on the code cells
@@ -66,6 +68,7 @@ def convert_ipynb(ipynb_file):
 
         # now we can add all the necessary arguments
         # as we work on temp files, no need to backup
+        # note : we are working on a local copy of "cmd2to3"
         cmd2to3.append("--nobackups")
         cmd2to3.append("--write")
         cmd2to3.append(file_name)
@@ -84,6 +87,23 @@ def convert_ipynb(ipynb_file):
 
         # the work is done, remove the temp file
         ostream.close()
+
+    return 0
+
+# reset cmd2to3
+def init_cmd():
+    global cmd2to3
+    cmd2to3 = []
+
+    # now we can contruct the command we will use
+    if sys.platform == "win32":
+        # on windows, 2to3 is a python script : 2to3.py
+        # so we call it from python
+        cmd2to3.append("python")
+        
+    # we can now append the complete path of 2to3
+    # we will add the others later
+    cmd2to3.append(path2to3)
 
     return 0
 
@@ -119,17 +139,6 @@ def find_2to3():
 
         script_path = os.path.dirname(sys.executable)
         script_path = script_path+os.sep+"Tools"+os.sep+"scripts"+os.sep+"2to3.py"
-
-        # other way to do this
-        #script_path = str.split(sys.path[1],"\\")
-        #script_path = script_path[:-1]
-        #script_path.insert(1,os.sep)
-        #script_path.append("Tools")
-        #script_path.append("scripts")
-        #script_path.append("2to3.py")
-        #print("script_path",script_path)
-        #print(os.sep)
-        #print(os.path.join('',*script_path))
     else:
         # 2to3 is in the path, we just store it
         # 'we already know it won't throw an exception)
@@ -140,43 +149,16 @@ def find_2to3():
 
     if os.path.exists(script_path):        
         path2to3 = script_path
-
-        # now we can contruct the command we will use
-        if sys.platform == "win32":
-            # on windows, 2to3 is a python script : 2to3.py
-            # so we call it from python
-            cmd2to3.append("python")
-        
-        # we can now append the complete path of 2to3
-        # we will add the others later
-        cmd2to3.append(path2to3)
-
+        init_cmd()
     else:
         print("can not find 2to3 :",script_path)
 
     return 0
 
-# TODO take care of line endings (win vs linux)
-def main(argv):
+def cell_name_compatibility(ipy_json):
     global code_cell_name
     global nb_version
 
-    if len(argv) != 3:        
-        print("Usage: {} fromfile.ipynb tofile.ipynb".format(argv[0]))        
-        return 1
-
-    # we search the path of 2to3 and write it in a global variable
-    find_2to3()
-
-    # checks
-    print("path2to3:",path2to3)
-    print("cmd2to3:",cmd2to3)
-    
-    ipy_json = None
-    #with io.open(argv[1], mode = "rU") as istream:
-    with io.open(argv[1], mode = "rU") as istream:
-        ipy_json = json.load(istream,strict=False)
-        
     # compatibility between Notebooks v4+ and v3-
     nb_version = ipy_json['nbformat']
     if nb_version == 4:
@@ -189,11 +171,58 @@ def main(argv):
         print("WARNING Unsupported Notebook version:",nb_version)
         print("IT MAY NOT WORK")
 
-    print("Notebook version:",nb_version)
+    print("Notebook version:",nb_version,"cell:",code_cell_name)
 
+    return 0
+
+def init_path():
+
+    # we search the path of 2to3 and write it in a global variable
+    find_2to3()
+
+    # checks
+    print("path2to3:",path2to3)
+    print("cmd2to3:",cmd2to3)
+
+    return 0
+
+def convert_ipynb_file(file_path):  
+
+    init_path()    
+
+    ipy_json = None
+    #with io.open(argv[1], mode = "rU") as istream:
+    with io.open(file_path, mode = "rU") as istream:
+        ipy_json = json.load(istream,strict=False)     
+               
+    cell_name_compatibility(ipy_json)
 
     # now we convert the json file with 2to3
-    convert_ipynb(ipy_json)
+    convert_ipynb_json(ipy_json)
+
+    # and write it back to disk when it is done
+    with io.open(file_path, mode = "w") as ostream:
+        json.dump(ipy_json, ostream)
+
+    return 0
+
+
+def main(argv): 
+    if len(argv) != 3:        
+        print("Usage: {} fromfile.ipynb tofile.ipynb".format(argv[0]))        
+        return 1
+
+    init_path()    
+    
+    ipy_json = None
+    #with io.open(argv[1], mode = "rU") as istream:
+    with io.open(argv[1], mode = "rU") as istream:
+        ipy_json = json.load(istream,strict=False)      
+
+    cell_name_compatibility(ipy_json)
+
+    # now we convert the json file with 2to3
+    convert_ipynb_json(ipy_json)
 
     # and write it back to disk when it is done
     with io.open(argv[2], mode = "w") as ostream:

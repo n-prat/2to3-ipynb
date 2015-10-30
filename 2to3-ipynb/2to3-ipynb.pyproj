@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>dfbffdae-896b-4b5f-80cf-6ba905bf44d8</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>2to3_ipynb.py</StartupFile>
+    <StartupFile>convert_all.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -13,7 +13,8 @@
     <Name>2to3-ipynb</Name>
     <RootNamespace>2to3-ipynb</RootNamespace>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <CommandLineArguments>knn.ipynb test.ipynb</CommandLineArguments>
+    <CommandLineArguments>
+    </CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -25,7 +26,13 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="2to3_ipynb.py" />
+    <Compile Include="convert_ipynb.py" />
+    <Compile Include="convert_all.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
