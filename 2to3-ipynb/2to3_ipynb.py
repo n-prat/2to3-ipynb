@@ -11,10 +11,11 @@ import tempfile
 import sys
 import inspect
 
-# global variable to store the path of 2to3
+# global variables
 path2to3 = ""
 cmd2to3 = []
-code_cell_name = ""
+code_cell_name = "" # for compatibility
+nb_version = 0 # Notebook version
 
 def is_python_code_cell(cell):
     return cell['cell_type'] == "code"
@@ -35,9 +36,17 @@ def replace_magic_lines(lines):
     return magic_lines
 
 def convert_ipynb(ipynb_file):
+    code_cells = []
 
-    # we filter out everything except code cells := cell_type : "code" 
-    code_cells = filter(is_python_code_cell, ipynb_file['cells'])
+    # we filter out everything except code cells
+    if nb_version >= 4:
+        code_cells = filter(is_python_code_cell, ipynb_file['cells'])
+    else:
+        for worksheet in ipynb_file['worksheets']: 
+            code_cells_temp = filter(is_python_code_cell, worksheet['cells']) 
+            for cell in code_cells_temp:
+                print(cell)
+                code_cells.append(cell)
 
     # we loop on the code cells
     for c in code_cells:
@@ -150,6 +159,7 @@ def find_2to3():
 # TODO take care of line endings (win vs linux)
 def main(argv):
     global code_cell_name
+    global nb_version
 
     if len(argv) != 3:        
         print("Usage: {} fromfile.ipynb tofile.ipynb".format(argv[0]))        
@@ -163,8 +173,9 @@ def main(argv):
     print("cmd2to3:",cmd2to3)
     
     ipy_json = None
-    with io.open(argv[1], mode = "r") as istream:
-        ipy_json = json.load(istream)
+    #with io.open(argv[1], mode = "rU") as istream:
+    with io.open(argv[1], mode = "rU") as istream:
+        ipy_json = json.load(istream,strict=False)
         
     # compatibility between Notebooks v4+ and v3-
     nb_version = ipy_json['nbformat']
@@ -179,6 +190,7 @@ def main(argv):
         print("IT MAY NOT WORK")
 
     print("Notebook version:",nb_version)
+
 
     # now we convert the json file with 2to3
     convert_ipynb(ipy_json)
