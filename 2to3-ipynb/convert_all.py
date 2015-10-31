@@ -13,13 +13,18 @@ def main(argv):
                         choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'], help="Set the logging level")
 
     args = parser.parse_args()
+    dir = args.directory
 
     if( args.logLevel ):
         logging.basicConfig(level=getattr(logging, args.logLevel))
 
+    if not(os.path.exists(dir)):
+        logging.error("DIRECTORY %s does not exist",dir)
+        exit(1)
+
     path2to3,cmd2to3 = convert.find_2to3()
 
-    for subdir, dirs, files in os.walk(args.directory):
+    for subdir, dirs, files in os.walk(dir):
         for file in files:
             filename, file_extension = os.path.splitext(file)
             if file_extension == ".py":
@@ -46,6 +51,5 @@ if __name__ == "__main__":
     main(sys.argv)
 
 # TODO magic lines(notebook v3 issue?)
-# TODO check if directory exists
 # TODO multithread convert_ipynb_json
 ## - can't use Popen there because we have to wait 2to3 to complete
