@@ -2,15 +2,14 @@
 
 import os
 import convert_ipynb as ipy
+import logging
 
 def main(argv):
-    print(len(argv),argv) # DEBUG
-
     if len(argv) != 2:        
         print("Usage: {} directory".format(argv[0]))                
         return 1
-    else:
-        print("args ok") #DEBUG
+
+    path2to3,cmd2to3 = ipy.find_2to3()
 
     for subdir, dirs, files in os.walk(argv[1]):
         for file in files:
@@ -18,16 +17,20 @@ def main(argv):
             if file_extension == ".py":
                 full_path = os.path.join(subdir, file)
                 print("found python file:",full_path)
-                ipy.convert_py_file(full_path)
+                # TODO multithread / Popen
+                ipy.convert_py_file(full_path,path2to3,cmd2to3)
             elif file_extension == ".ipynb":
                 full_path = os.path.join(subdir, file)
                 print("found IPython notebook:",full_path)
-                ipy.convert_ipynb_file(full_path)
+                ipy.convert_ipynb_file(full_path,path2to3,cmd2to3)
             else:
-                print("ignoring:",filename,file_extension)
+                logging.info("ignoring:",filename,file_extension)
 
     return 0
 
 if __name__ == "__main__":
     import sys
     main(sys.argv)
+
+# TODO magic lines(notebook v3 issue?)
+# TODO check if directory exists

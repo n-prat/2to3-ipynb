@@ -10,10 +10,11 @@ import subprocess
 import tempfile
 import sys
 import inspect
+import logging
 
 # global variables
-path2to3 = ""
-cmd2to3 = []
+#path2to3 = ""
+#cmd2to3 = []
 code_cell_name = "" # for compatibility
 nb_version = 0 # Notebook version
 
@@ -36,10 +37,9 @@ def replace_magic_lines(lines):
     return magic_lines
 
 # convert an ipynb json
-def convert_ipynb_json(ipynb_json):
+def convert_ipynb_json(ipynb_json,path2to3,cmd2to3):
     code_cells = []
-    init_cmd() # needed because without it, we append at each function call
-
+    
     # we filter out everything except code cells
     if nb_version >= 4:
         code_cells = filter(is_python_code_cell, ipynb_json['cells'])
@@ -52,30 +52,26 @@ def convert_ipynb_json(ipynb_json):
 
     # we loop on the code cells
     for c in code_cells:
-        #print(cell) #DEBUG
-       #code = c['source'] #CHECK        
 
         # remove the magic lines
         magic = replace_magic_lines(c[code_cell_name])
 
-        #print(code) #DEBUG
         file_name = None
         with tempfile.NamedTemporaryFile(
                     mode = "w", delete = False) as ostream:                    
                 ostream.writelines(c[code_cell_name]) 
                 file_name = ostream.name   
-                #print(file_name) #DEBUG
 
-        # now we can add all the necessary arguments
-        # as we work on temp files, no need to backup
-        # note : we are working on a local copy of "cmd2to3"
-        cmd2to3.append("--nobackups")
-        cmd2to3.append("--write")
-        cmd2to3.append(file_name)
+        # now we can add the filename argument
+        cmd = cmd2to3
+        cmd.append(file_name)
+
+        logging.debug("cmd ; ",cmd)
 
         # we can now call 2to3 on the content
         # do not show the output
-        subprocess.check_call(cmd2to3, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+        subprocess.check_call(cmd, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+        # TODO use Popen instead -> stop waiting the return
 
         # write back the converted content
         with io.open(file_name, mode = "r") as istream:
@@ -108,20 +104,23 @@ def init_cmd():
     # we will add the others later
     cmd2to3.append(path2to3)
 
-    return 0
+    # options
+    cmd2to3.append("--nobackups")
+    cmd2to3.append("--write")
+
+    return cmd2to3
 
 
 
 
 def find_2to3():
     global path2to3
-    global cmd2to3
     found = None
 
     # check if 2to3 is in the PATH
     if sys.platform == "win32":
         try:
-            subprocess.check_call("where 2to3",shell=True)
+            subprocess.check_call("where 2to3.py")
             found = True
         except subprocess.CalledProcessError as e:
             print(e)
@@ -130,7 +129,7 @@ def find_2to3():
         # assume non-windows platform can use "which"
         # probably not true
         try:
-            subprocess.check_call("which 2to3",shell=True)
+            subprocess.check_call("which 2to3")
             found = True
         except subprocess.CalledProcessError as e:
             print(e)
@@ -141,7 +140,7 @@ def find_2to3():
         # start from the python executable directory
         # and assume that stucture : Python35\Tools\scripts
 
-        print("2to3 is not in the PATH...")        
+        logging.info("2to3 is not in the PATH...")        
 
         script_path = os.path.dirname(sys.executable)
         script_path = script_path+os.sep+"Tools"+os.sep+"scripts"+os.sep+"2to3.py"
@@ -158,8 +157,11 @@ def find_2to3():
         init_cmd()
     else:
         print("can not find 2to3 :",script_path)
+            
+    logging.info("path2to3:",path2to3)
+    logging.info("cmd2to3:",cmd2to3)
 
-    return 0
+    return path2to3,cmd2to3
 
 
 
@@ -180,40 +182,26 @@ def cell_name_compatibility(ipy_json):
         print("WARNING Unsupported Notebook version:",nb_version)
         print("IT MAY NOT WORK")
 
-    print("Notebook version:",nb_version,"cell:",code_cell_name)
+    logging.info("Notebook version:",nb_version,"cell:",code_cell_name)
 
     return 0
 
 
 
 
-def init_path():
-
-    # we search the path of 2to3 and write it in a global variable
-    find_2to3()
-
-    # checks
-    print("path2to3:",path2to3)
-    print("cmd2to3:",cmd2to3)
-
-    return 0
-
-
-
-
-def convert_ipynb_file(file_path):  
-
-    init_path()    
+def convert_ipynb_file(file_path,path2to3,cmd2to3):  
 
     ipy_json = None
     #with io.open(argv[1], mode = "rU") as istream:
     with io.open(file_path, mode = "rU") as istream:
         ipy_json = json.load(istream,strict=False)     
                
+    # we need to call it here because it is called from convert_all
+    # and we could have multiple versions in a given directory
     cell_name_compatibility(ipy_json)
 
     # now we convert the json file with 2to3
-    convert_ipynb_json(ipy_json)
+    convert_ipynb_json(ipy_json,path2to3,cmd2to3)
 
     # and write it back to disk when it is done
     with io.open(file_path, mode = "w") as ostream:
@@ -224,21 +212,18 @@ def convert_ipynb_file(file_path):
 
 
 
-def convert_py_file(file_path):  
-
-    init_path()    
-    init_cmd()
-
+def convert_py_file(file_path,path2to3,cmd2to3):  
+    
     # simpler with basic py files :
-    # we just call 2to3
-    # note : we are working on a local copy of "cmd2to3"
-    cmd2to3.append("--nobackups")
-    cmd2to3.append("--write")
-    cmd2to3.append(file_path)
+
+    # construct the command
+    cmd = cmd2to3
+    cmd.append(file_path)
 
     # we can now call 2to3 on the content
     # do not show the output
-    subprocess.check_call(cmd2to3, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+    subprocess.check_call(cmd, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+    # TODO replace with Popen
 
     return 0
 
