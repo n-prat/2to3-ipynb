@@ -4,6 +4,8 @@ import os
 import lib_convert as convert
 import logging
 import argparse
+import time
+from multiprocessing import Pool,cpu_count
 
 def main(argv):
     parser = argparse.ArgumentParser()
@@ -24,20 +26,56 @@ def main(argv):
 
     path2to3,cmd2to3 = convert.find_2to3()
 
+    ipynb_files = []
+
     for subdir, dirs, files in os.walk(dir):
         for file in files:
             filename, file_extension = os.path.splitext(file)
             if file_extension == ".py":
                 full_path = os.path.join(subdir, file)
                 logging.info("found python file: %s",full_path)
-                # TODO multithread / Popen
+
+                # The underlying call to 2to3 is made with Popen
+                # so it is basically multithreaded
                 convert.convert_py_file(full_path,path2to3,cmd2to3)
             elif file_extension == ".ipynb":
                 full_path = os.path.join(subdir, file)
                 logging.info("found IPython notebook: %s",full_path)
-                convert.convert_ipynb_file(full_path,path2to3,cmd2to3)
+
+                # Creating 1 thread/file is not a good idea
+                #p = mp.Process(target=convert.convert_ipynb_file, args=(full_path,path2to3,cmd2to3))
+                #p.start()
+
+                # Instead with store all files for later
+                ipynb_files.append([full_path,path2to3,cmd2to3])
+
+                #convert.convert_ipynb_file(full_path,path2to3,cmd2to3)
             else:
                 logging.info("ignoring: %s%s",filename,file_extension)
+
+    # We have the list of all ipynb files
+    # Let's work
+    cpu = cpu_count()
+    logging.info("CPU count : %s",cpu)
+
+    p = Pool(cpu)
+    p.map(convert.convert_ipynb_helper, ipynb_files)
+
+    # Benchmark multithread
+    '''
+    tic = time.clock()
+    p.map(convert.convert_ipynb_helper, ipynb_files)
+    toc = time.clock()
+    t1 = toc-tic
+
+    tic = time.clock()
+    for ipy in ipynb_files:
+        convert.convert_ipynb_helper(ipy)
+    toc = time.clock()
+    t2 = toc-tic
+
+    print("SPEED-UP :",t2/t1)
+    '''
 
     print("\n *************************** \n")
     print(" Manual conversions could still be needed")

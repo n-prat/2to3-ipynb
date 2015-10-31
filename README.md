@@ -1,18 +1,20 @@
 ## What does it do?
-It converts IPython Notebooks from Python2 to Python3. 
-Basically, it is simply calling 2to3 on the code cells of a Notebook.
+Recursively converts every Python and IPython Notebook in a directory to Python 3.  
+The conversion is done with *2to3*
 
 
 ## How to use?
-* 2to3_ipynb in.ipyn out.ipynb
+**convert_all *directory***
 
+Will convert every *.py* and *.ipynb* files in *directory* to Python 3   
+*directory* can also be a single file   
+
+It should use all your CPU cores.
 
 ## NOTES
-* On windows, if you get errors related to tcl/tk
-Copy ...Python35\tcl\tk8.6 and Python35\tcl\tcl8.6 to ...assignment1\.env\Lib
-
-* If you get UnicodeDecodeError when loading with pickle
-Replace the *pickle.load line* with *datadict = pickle.load(f, encoding='latin1')*
+* If you get *UnicodeDecodeError* when loading with pickle :   
+Replace *pickle.load* with *pickle.load(f,encoding='latin1')*  
+This is because Python 3 is using unicode.
 
 #### TODO
 * test on Linux (and Mac)
