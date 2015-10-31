@@ -25,7 +25,7 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="convert_ipynb.py" />
+    <Compile Include="lib_convert.py" />
     <Compile Include="convert_all.py">
       <SubType>Code</SubType>
     </Compile>

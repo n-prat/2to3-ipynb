@@ -221,32 +221,3 @@ def convert_py_file(file_path,path2to3,cmd2to3):
     subprocess.Popen(str,stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
 
     return 0
-
-
-
-
-def main(argv): 
-    if len(argv) != 3:        
-        print("Usage: {} fromfile.ipynb tofile.ipynb".format(argv[0]))        
-        return 1
-
-    init_path()    
-    
-    ipy_json = None
-    #with io.open(argv[1], mode = "rU") as istream:
-    with io.open(argv[1], mode = "rU") as istream:
-        ipy_json = json.load(istream,strict=False)      
-
-    cell_name_compatibility(ipy_json)
-
-    # now we convert the json file with 2to3
-    convert_ipynb_json(ipy_json)
-
-    # and write it back to disk when it is done
-    with io.open(argv[2], mode = "w") as ostream:
-        json.dump(ipy_json, ostream)
-    return 0
-
-if __name__ == "__main__":
-    import sys
-    main(sys.argv)

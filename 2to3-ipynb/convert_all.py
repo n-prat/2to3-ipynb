@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import os
-import convert_ipynb as ipy
+import lib_convert as convert
 import logging
 import argparse
 
@@ -17,7 +17,7 @@ def main(argv):
     if( args.logLevel ):
         logging.basicConfig(level=getattr(logging, args.logLevel))
 
-    path2to3,cmd2to3 = ipy.find_2to3()
+    path2to3,cmd2to3 = convert.find_2to3()
 
     for subdir, dirs, files in os.walk(args.directory):
         for file in files:
@@ -26,11 +26,11 @@ def main(argv):
                 full_path = os.path.join(subdir, file)
                 logging.info("found python file: %s",full_path)
                 # TODO multithread / Popen
-                ipy.convert_py_file(full_path,path2to3,cmd2to3)
+                convert.convert_py_file(full_path,path2to3,cmd2to3)
             elif file_extension == ".ipynb":
                 full_path = os.path.join(subdir, file)
                 logging.info("found IPython notebook: %s",full_path)
-                ipy.convert_ipynb_file(full_path,path2to3,cmd2to3)
+                convert.convert_ipynb_file(full_path,path2to3,cmd2to3)
             else:
                 logging.info("ignoring: %s%s",filename,file_extension)
 
