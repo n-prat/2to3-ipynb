@@ -13,8 +13,6 @@ import inspect
 import logging
 
 # global variables
-#path2to3 = ""
-#cmd2to3 = []
 code_cell_name = "" # for compatibility
 nb_version = 0 # Notebook version
 
@@ -89,32 +87,9 @@ def convert_ipynb_json(ipynb_json,path2to3,cmd2to3):
 
 
 
-# reset cmd2to3
-def init_cmd():
-    global cmd2to3
-    cmd2to3 = []
-
-    # now we can contruct the command we will use
-    if sys.platform == "win32":
-        # on windows, 2to3 is a python script : 2to3.py
-        # so we call it from python
-        cmd2to3.append("python")
-        
-    # we can now append the complete path of 2to3
-    # we will add the others later
-    cmd2to3.append(path2to3)
-
-    # options
-    cmd2to3.append("--nobackups")
-    cmd2to3.append("--write")
-
-    return cmd2to3
-
-
-
-
 def find_2to3():
-    global path2to3
+    path2to3 = ""
+    cmd2to3 = []
     found = None
 
     # check if 2to3 is in the PATH
@@ -148,15 +123,27 @@ def find_2to3():
         # 2to3 is in the path, we just store it
         # 'we already know it won't throw an exception)
         if sys.platform == "win32":
-            script_path = subprocess.check_output("where 2to3",shell=True)
+            script_path = subprocess.check_output("where 2to3.py",shell=True)
         else:
             script_path = subprocess.check_output("which 2to3",shell=True)
 
     if os.path.exists(script_path):        
         path2to3 = script_path
-        init_cmd()
+        # now we can contruct the command we will use
+        if sys.platform == "win32":
+            # on windows, 2to3 is a python script : 2to3.py
+            # so we call it from python
+            cmd2to3.append("python")
+        
+        # we can now append the complete path of 2to3
+        # we will add the others later
+        cmd2to3.append(path2to3)
+
+        # options
+        cmd2to3.append("--nobackups")
+        cmd2to3.append("--write")
     else:
-        print("can not find 2to3 :",script_path)
+        logging.error("can not find 2to3 :",script_path)
             
     logging.info("path2to3:",path2to3)
     logging.info("cmd2to3:",cmd2to3)
