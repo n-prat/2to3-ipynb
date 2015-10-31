@@ -37,6 +37,7 @@ def replace_magic_lines(lines):
 # convert an ipynb json
 def convert_ipynb_json(ipynb_json,path2to3,cmd2to3):
     code_cells = []
+    cmd = []
     
     # we filter out everything except code cells
     if nb_version >= 4:
@@ -61,15 +62,17 @@ def convert_ipynb_json(ipynb_json,path2to3,cmd2to3):
                 file_name = ostream.name   
 
         # now we can add the filename argument
-        cmd = cmd2to3
+        # WARNING Python uses names ~ references
+        #cmd = cmd2to3
+        cmd = cmd2to3.copy()
         cmd.append(file_name)
 
         logging.debug("cmd ; ",cmd)
 
         # we can now call 2to3 on the content
         # do not show the output
-        subprocess.check_call(cmd, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
-        # TODO use Popen instead -> stop waiting the return
+        p = subprocess.Popen(cmd, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+        p.wait() # DO NOT REMOVE
 
         # write back the converted content
         with io.open(file_name, mode = "r") as istream:
@@ -211,7 +214,6 @@ def convert_py_file(file_path,path2to3,cmd2to3):
 
     # Popen requires a string
     str = ' '.join(cmd) 
-    print("convert_py_file CMD :",str) #REMOVE
 
     # we can now call 2to3 on the content
     # do not show the output
