@@ -67,7 +67,7 @@ def convert_ipynb_json(ipynb_json,path2to3,cmd2to3):
         cmd = cmd2to3.copy()
         cmd.append(file_name)
 
-        logging.debug("cmd ; ",cmd)
+        logging.debug("cmd ; %s",cmd)
 
         # we can now call 2to3 on the content
         # do not show the output
@@ -146,10 +146,10 @@ def find_2to3():
         cmd2to3.append("--nobackups")
         cmd2to3.append("--write")
     else:
-        logging.error("can not find 2to3 :",script_path)
+        logging.error("can not find 2to3 in : %s",script_path)
             
-    logging.info("path2to3:",path2to3)
-    logging.info("cmd2to3:",cmd2to3)
+    logging.info("path2to3: %s",path2to3)
+    logging.info("cmd2to3: %s",cmd2to3)
 
     return path2to3,cmd2to3
 
@@ -172,7 +172,7 @@ def cell_name_compatibility(ipy_json):
         logging.warning("WARNING Unsupported Notebook version: %s",nb_version)
         logging.warning("IT MAY NOT WORK")
 
-    logging.info("Notebook version:",nb_version,"cell:",code_cell_name)
+    logging.info("Notebook version: %s cell: %s",nb_version,code_cell_name)
 
     return 0
 
