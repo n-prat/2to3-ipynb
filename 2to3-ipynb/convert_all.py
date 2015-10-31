@@ -26,6 +26,11 @@ def main(argv):
             else:
                 logging.info("ignoring:",filename,file_extension)
 
+    print("\n *************************** \n")
+    print("Manual conversions could still be needed")
+    print("Check notes README.md")    
+    print("\n *************************** \n")
+
     return 0
 
 if __name__ == "__main__":
