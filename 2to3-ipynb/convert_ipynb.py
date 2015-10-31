@@ -169,8 +169,8 @@ def cell_name_compatibility(ipy_json):
     else:
         # we can try and suppose it could work
         code_cell_name = 'source'
-        print("WARNING Unsupported Notebook version:",nb_version)
-        print("IT MAY NOT WORK")
+        logging.warning("WARNING Unsupported Notebook version: %s",nb_version)
+        logging.warning("IT MAY NOT WORK")
 
     logging.info("Notebook version:",nb_version,"cell:",code_cell_name)
 
