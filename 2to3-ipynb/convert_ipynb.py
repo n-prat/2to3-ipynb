@@ -199,18 +199,24 @@ def convert_ipynb_file(file_path,path2to3,cmd2to3):
 
 
 
-def convert_py_file(file_path,path2to3,cmd2to3):  
-    
+def convert_py_file(file_path,path2to3,cmd2to3):      
     # simpler with basic py files :
 
-    # construct the command
-    cmd = cmd2to3
+    # Construct the command
+    # WARNING : Python uses object names ~ references
+    # Do NOT do : cmd = []; cmd = cmd2to3; cmd.append(file_path)
+    # IT WOULD APPEND TO CMD2TO3    
+    cmd = cmd2to3.copy()
     cmd.append(file_path)
+
+    # Popen requires a string
+    str = ' '.join(cmd) 
+    print("convert_py_file CMD :",str) #REMOVE
 
     # we can now call 2to3 on the content
     # do not show the output
-    subprocess.check_call(cmd, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
-    # TODO replace with Popen
+    #subprocess.check_call(cmd, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+    subprocess.Popen(str,stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
 
     return 0
 

@@ -18,11 +18,12 @@ def main(argv):
                 full_path = os.path.join(subdir, file)
                 print("found python file:",full_path)
                 # TODO multithread / Popen
+                #print("cmd2to3:",cmd2to3); #REMOVE
                 ipy.convert_py_file(full_path,path2to3,cmd2to3)
             elif file_extension == ".ipynb":
                 full_path = os.path.join(subdir, file)
                 print("found IPython notebook:",full_path)
-                ipy.convert_ipynb_file(full_path,path2to3,cmd2to3)
+                #ipy.convert_ipynb_file(full_path,path2to3,cmd2to3)
             else:
                 logging.info("ignoring:",filename,file_extension)
 
