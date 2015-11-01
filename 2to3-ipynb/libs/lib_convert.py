@@ -218,7 +218,9 @@ def convert_py_file(file_path,path2to3,cmd2to3):
     # we can now call 2to3 on the content
     # do not show the output
     #subprocess.check_call(cmd, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
-    subprocess.Popen(str,stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+    #subprocess.Popen(str,stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+    # # USE A BLOCKING CALL because already multithreaded above
+    subprocess.check_call(cmd,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
 
     return 0
 

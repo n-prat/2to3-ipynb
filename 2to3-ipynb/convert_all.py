@@ -35,6 +35,7 @@ def main(argv):
     path_2to3,cmd_2to3 = convert.find_2to3()
 
     ipynb_files = []
+    py_files = []
 
     for subdir, dirs, files in os.walk(dir):
         for file in files:
@@ -45,7 +46,7 @@ def main(argv):
 
                 # The underlying call to 2to3 is made with Popen
                 # so it is basically multithreaded
-                convert.convert_py_file(full_path,path_2to3,cmd_2to3)
+                py_files.append(full_path)
             elif file_extension == ".ipynb":
                 full_path = os.path.join(subdir, file)
                 logging.info("found IPython notebook: %s",full_path)
@@ -55,20 +56,25 @@ def main(argv):
             else:
                 logging.info("ignoring: %s%s",filename,file_extension)
 
-    # We have the list of all ipynb files
     # Let's work
     cpu = cpu_count()    
     #cpu = mp.cpu_count()
     logging.info("CPU count : %s",cpu)
 
+    # We have the list of all py files
+    # Create a partial to hold the required arguments for convert_py_file
+    partial_py = partial(convert.convert_py_file,path2to3=path_2to3,cmd2to3=cmd_2to3)
+    logging.debug("pynb files : %s",py_files)
+
+    # We have the list of all ipynb files
     # Create a partial to hold the required arguments for convert_ipynb_file
     partial_ipynb = partial(convert.convert_ipynb_file,path2to3=path_2to3,cmd2to3=cmd_2to3)
     logging.debug("ipynb files : %s",ipynb_files)
 
     # And then call map
     p = Pool(cpu)     
+    p.map(partial_py,py_files)
     p.map(partial_ipynb, ipynb_files)
-
 
     # test logging in module
     #convert.test_logging_one_arg("DIRECT CALL")
