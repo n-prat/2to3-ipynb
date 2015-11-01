@@ -3,6 +3,10 @@
 
 test
 test.zip
+test*
+cpython*
+.pyc*
+pyc
 
 # User-specific files
 *.suo
@@ -213,3 +217,5 @@ FakesAssemblies/
 GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
+/2to3-ipynb/testNested
+*.pyc
