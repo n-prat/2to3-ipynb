@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import os
-import lib_convert as convert
+import libs.lib_convert as convert
 import logging
 import argparse
 import time
@@ -54,7 +54,7 @@ def main(argv):
     logging.info("CPU count : %s",cpu)
 
     p = Pool(cpu)
-
+    
     # Create a partial to hold the required arguments for convert_ipynb_file
     # And then call map
     partial_ipynb = partial(convert.convert_ipynb_file,path2to3=path_2to3,cmd2to3=cmd_2to3)

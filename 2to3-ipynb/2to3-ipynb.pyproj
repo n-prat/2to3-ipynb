@@ -25,13 +25,16 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="lib_convert.py" />
+    <Compile Include="libs\lib_convert.py" />
     <Compile Include="convert_all.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="__init__.py">
+    <Compile Include="libs\__init__.py">
       <SubType>Code</SubType>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="libs\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
