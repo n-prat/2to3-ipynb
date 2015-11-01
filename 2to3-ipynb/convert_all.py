@@ -110,8 +110,5 @@ if __name__ == "__main__":
     main(sys.argv)
 
 # TODO magic lines(notebook v3 issue?)
-# TODO multithread convert_ipynb_json
-## - can't use Popen there because we have to wait 2to3 to complete
-# TODO use a Pool for py files too
 # TODO do not convert ipynb checkpoints?
 # TODO multiprocessing logging(windows-only issue?)
