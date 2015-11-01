@@ -6,6 +6,7 @@ import logging
 import argparse
 import time
 from multiprocessing import Pool,cpu_count
+from functools import partial
 
 def main(argv):
     parser = argparse.ArgumentParser()
@@ -24,7 +25,7 @@ def main(argv):
         logging.error("DIRECTORY %s does not exist",dir)
         exit(1)
 
-    path2to3,cmd2to3 = convert.find_2to3()
+    path_2to3,cmd_2to3 = convert.find_2to3()
 
     ipynb_files = []
 
@@ -37,19 +38,13 @@ def main(argv):
 
                 # The underlying call to 2to3 is made with Popen
                 # so it is basically multithreaded
-                convert.convert_py_file(full_path,path2to3,cmd2to3)
+                convert.convert_py_file(full_path,path_2to3,cmd_2to3)
             elif file_extension == ".ipynb":
                 full_path = os.path.join(subdir, file)
                 logging.info("found IPython notebook: %s",full_path)
 
-                # Creating 1 thread/file is not a good idea
-                #p = mp.Process(target=convert.convert_ipynb_file, args=(full_path,path2to3,cmd2to3))
-                #p.start()
-
                 # Instead with store all files for later
-                ipynb_files.append([full_path,path2to3,cmd2to3])
-
-                #convert.convert_ipynb_file(full_path,path2to3,cmd2to3)
+                ipynb_files.append(full_path)
             else:
                 logging.info("ignoring: %s%s",filename,file_extension)
 
@@ -59,7 +54,12 @@ def main(argv):
     logging.info("CPU count : %s",cpu)
 
     p = Pool(cpu)
-    p.map(convert.convert_ipynb_helper, ipynb_files)
+
+    # Create a partial to hold the required arguments for convert_ipynb_file
+    # And then call map
+    partial_ipynb = partial(convert.convert_ipynb_file,path2to3=path_2to3,cmd2to3=cmd_2to3)
+    logging.debug("ipynb files : %s",ipynb_files)
+    p.map(partial_ipynb, ipynb_files)
 
     # Benchmark multithread
     '''
@@ -91,3 +91,5 @@ if __name__ == "__main__":
 # TODO magic lines(notebook v3 issue?)
 # TODO multithread convert_ipynb_json
 ## - can't use Popen there because we have to wait 2to3 to complete
+# TODO use a Pool for py files too
+# TODO do not convert ipynb checkpoints?

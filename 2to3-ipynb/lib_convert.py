@@ -118,7 +118,7 @@ def find_2to3():
         # start from the python executable directory
         # and assume that stucture : Python35\Tools\scripts
 
-        logging.info("2to3 is not in the PATH...")        
+        logging.info("2to3 is not in the PATH")        
 
         script_path = os.path.dirname(sys.executable)
         script_path = script_path+os.sep+"Tools"+os.sep+"scripts"+os.sep+"2to3.py"
@@ -180,7 +180,7 @@ def cell_name_compatibility(ipy_json):
 
 
 def convert_ipynb_file(file_path,path2to3,cmd2to3):  
-
+    logging.debug("convert_ipynb_file: %s %s %s",file_path,path2to3,cmd2to3)
     ipy_json = None
     #with io.open(argv[1], mode = "rU") as istream:
     with io.open(file_path, mode = "rU") as istream:
@@ -199,32 +199,6 @@ def convert_ipynb_file(file_path,path2to3,cmd2to3):
 
     return 0
 
-
-# Helper function used to multithread with Pool
-def convert_ipynb_helper(args):  
-    file_path = args[0]
-    path2to3 = args[1]
-    cmd2to3 = args[2]
-
-    logging.info("HELPER %s",file_path)
-    
-    ipy_json = None
-    #with io.open(argv[1], mode = "rU") as istream:
-    with io.open(file_path, mode = "rU") as istream:
-        ipy_json = json.load(istream,strict=False)     
-               
-    # we need to call it here because it is called from convert_all
-    # and we could have multiple versions in a given directory
-    cell_name_compatibility(ipy_json)
-    
-    # now we convert the json file with 2to3
-    convert_ipynb_json(ipy_json,path2to3,cmd2to3)
-
-    # and write it back to disk when it is done
-    with io.open(file_path, mode = "w") as ostream:
-        json.dump(ipy_json, ostream)
-
-    return 0
 
 
 def convert_py_file(file_path,path2to3,cmd2to3):      
