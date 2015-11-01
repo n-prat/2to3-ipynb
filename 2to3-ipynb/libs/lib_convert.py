@@ -3,6 +3,7 @@
 # based on IPython-2to3 by @vlad17 (https://github.com/vlad17)
 # https://github.com/vlad17/IPython-2to3/blob/master/ipy2to3.py
 
+import logging
 import io
 import json
 import os
@@ -10,7 +11,7 @@ import subprocess
 import tempfile
 import sys
 import inspect
-import logging
+import multiprocessing
 
 # global variables
 code_cell_name = "" # for compatibility
@@ -94,7 +95,7 @@ def find_2to3():
     path2to3 = ""
     cmd2to3 = []
     found = None
-
+    
     # check if 2to3 is in the PATH
     if sys.platform == "win32":
         try:
@@ -218,5 +219,19 @@ def convert_py_file(file_path,path2to3,cmd2to3):
     # do not show the output
     #subprocess.check_call(cmd, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
     subprocess.Popen(str,stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+
+    return 0
+
+
+def test_logging_one_arg(file_path):
+    logger = multiprocessing.get_logger()
+    logger.setLevel(logging.INFO)
+
+    logging.debug("logging test_logging_one_arg debug: %s",file_path)
+    logging.info("logging test_logging_one_arg info: %s",file_path)
+
+    print("PRINT test_logging_one_arg",file_path)
+
+    logger.debug("multiprocessing.get_logger gdf")
 
     return 0

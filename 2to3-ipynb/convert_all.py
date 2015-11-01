@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 
-import os
-import libs.lib_convert as convert
 import logging
+import os
 import argparse
 import time
+import multiprocessing as mp
 from multiprocessing import Pool,cpu_count
+#import multiprocessing as mp
 from functools import partial
+
+import libs.lib_convert as convert
 
 def main(argv):
     parser = argparse.ArgumentParser()
@@ -19,7 +22,11 @@ def main(argv):
     dir = args.directory
 
     if( args.logLevel ):
-        logging.basicConfig(level=getattr(logging, args.logLevel))
+        print("Starting logging with level",args.logLevel)
+        logging.basicConfig(level=args.logLevel)
+        logger = mp.get_logger()
+        logger.setLevel(logging.INFO)
+        logger.warning('LOGGING WITH MULTIPROCESSING')
 
     if not(os.path.exists(dir)):
         logging.error("DIRECTORY %s does not exist",dir)
@@ -50,16 +57,24 @@ def main(argv):
 
     # We have the list of all ipynb files
     # Let's work
-    cpu = cpu_count()
+    cpu = cpu_count()    
+    #cpu = mp.cpu_count()
     logging.info("CPU count : %s",cpu)
 
-    p = Pool(cpu)
-    
     # Create a partial to hold the required arguments for convert_ipynb_file
-    # And then call map
     partial_ipynb = partial(convert.convert_ipynb_file,path2to3=path_2to3,cmd2to3=cmd_2to3)
     logging.debug("ipynb files : %s",ipynb_files)
+
+    # And then call map
+    p = Pool(cpu)     
     p.map(partial_ipynb, ipynb_files)
+
+
+    # test logging in module
+    #convert.test_logging_one_arg("DIRECT CALL")
+    #print("MAP :")
+    #p.map(convert.test_logging_one_arg,ipynb_files)
+
 
     # Benchmark multithread
     '''
@@ -93,3 +108,4 @@ if __name__ == "__main__":
 ## - can't use Popen there because we have to wait 2to3 to complete
 # TODO use a Pool for py files too
 # TODO do not convert ipynb checkpoints?
+# TODO multiprocessing logging(windows-only issue?)
