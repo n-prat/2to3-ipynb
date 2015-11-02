@@ -109,6 +109,5 @@ if __name__ == "__main__":
     import sys
     main(sys.argv)
 
-# TODO magic lines(notebook v3 issue?)
 # TODO do not convert ipynb checkpoints?
 # TODO multiprocessing logging(windows-only issue?)

@@ -81,7 +81,7 @@ def convert_ipynb_json(ipynb_json,path2to3,cmd2to3):
 
         # put the magic lines back in place
         for i, line in magic:
-            c[i] = line
+            c[code_cell_name][i] = line
 
         # the work is done, remove the temp file
         ostream.close()
