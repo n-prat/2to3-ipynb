@@ -8,6 +8,7 @@ import multiprocessing as mp
 from multiprocessing import Pool,cpu_count
 #import multiprocessing as mp
 from functools import partial
+from distutils.util import strtobool
 
 import libs.lib_convert as convert
 
@@ -32,6 +33,22 @@ def main(argv):
         logging.error("DIRECTORY %s does not exist",dir)
         exit(1)
 
+    # Ask for confirmation and show a disclaimer
+    print("The files will be overridden.")
+    print("MAKE SURE YOU HAVE A BACKUP")
+    print("Are you sure you want to proceed? [y/n]")   
+    go = False
+    try:
+        go = strtobool(input().lower())
+    except ValueError:
+        print('Please respond with \'y\' or \'n\'.') 
+    
+    if not go:
+        print("Aborting...")
+        sys.exit(1)
+    else:
+        print("Proceeding")
+        
     path_2to3,cmd_2to3 = convert.find_2to3()
 
     ipynb_files = []
