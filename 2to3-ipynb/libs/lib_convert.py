@@ -90,7 +90,7 @@ def convert_ipynb_json(ipynb_json,path2to3,cmd2to3):
 
 
 
-
+# TODO refactor to use 1 if/else
 def find_2to3():
     path2to3 = ""
     cmd2to3 = []
@@ -99,16 +99,16 @@ def find_2to3():
     # check if 2to3 is in the PATH
     if sys.platform == "win32":
         try:
-            subprocess.check_call("where 2to3.py")
+            subprocess.check_call("where 2to3.py", stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
             found = True
         except subprocess.CalledProcessError as e:
-            print(e)
+            logging.info(e)
             found = False    
     else:
         # assume non-windows platform can use "which"
         # probably not true
         try:
-            subprocess.check_call("which 2to3")
+            subprocess.check_call("which 2to3", stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
             found = True
         except subprocess.CalledProcessError as e:
             print(e)
