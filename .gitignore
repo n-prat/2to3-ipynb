@@ -7,6 +7,8 @@ test*
 cpython*
 .pyc*
 pyc
+.remote-sync.json
+__pychache__
 
 # User-specific files
 *.suo
