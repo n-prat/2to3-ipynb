@@ -7,7 +7,7 @@ The conversion is done with *2to3*
 **MAKE SURE YOU HAVE A BACKUP**   
 **The files will be overridden** 
 
-**convert_all *directory***  
+**convert_all** ***directory***  
 (not tested on Linux)  
 
 Will convert every *.py* and *.ipynb* files in *directory* to Python 3   
@@ -21,6 +21,4 @@ Replace *pickle.load* with *pickle.load(f,encoding='latin1')*
 This is because Python 3 is using unicode.
 
 #### TODO
-* test on Linux (and Mac)
-* test with IPython 3 Notebooks -> seems to be mostly working
-* errors with magic lines
+* test on Linux/Unix
