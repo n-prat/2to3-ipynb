@@ -39,13 +39,13 @@ def replace_magic_lines(lines):
 def convert_ipynb_json(ipynb_json,path2to3,cmd2to3):
     code_cells = []
     cmd = []
-    
+
     # we filter out everything except code cells
     if nb_version >= 4:
         code_cells = filter(is_python_code_cell, ipynb_json['cells'])
     else:
-        for worksheet in ipynb_json['worksheets']: 
-            code_cells_temp = filter(is_python_code_cell, worksheet['cells']) 
+        for worksheet in ipynb_json['worksheets']:
+            code_cells_temp = filter(is_python_code_cell, worksheet['cells'])
             for cell in code_cells_temp:
                 #print(cell)
                 code_cells.append(cell)
@@ -58,9 +58,9 @@ def convert_ipynb_json(ipynb_json,path2to3,cmd2to3):
 
         file_name = None
         with tempfile.NamedTemporaryFile(
-                    mode = "w", delete = False) as ostream:                    
-                ostream.writelines(c[code_cell_name]) 
-                file_name = ostream.name   
+                    mode = "w", delete = False) as ostream:
+                ostream.writelines(c[code_cell_name])
+                file_name = ostream.name
 
         # now we can add the filename argument
         # WARNING Python uses names ~ references
@@ -68,7 +68,7 @@ def convert_ipynb_json(ipynb_json,path2to3,cmd2to3):
         cmd = cmd2to3.copy()
         cmd.append(file_name)
 
-        logging.debug("cmd ; %s",cmd)
+        logging.debug("(convert_ipynb_json) cmd ; %s",cmd)
 
         # we can now call 2to3 on the content
         # do not show the output
@@ -95,7 +95,7 @@ def find_2to3():
     path2to3 = ""
     cmd2to3 = []
     found = None
-    
+
     # check if 2to3 is in the PATH
     if sys.platform == "win32":
         try:
@@ -103,15 +103,15 @@ def find_2to3():
             found = True
         except subprocess.CalledProcessError as e:
             logging.info(e)
-            found = False    
+            found = False
     else:
         # assume non-windows platform can use "which"
         # probably not true
         try:
-            subprocess.check_call("which 2to3", stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+            subprocess.check_call("which 2to3", stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,shell = True)
             found = True
         except subprocess.CalledProcessError as e:
-            print(e)
+            logging.info(e)
             found = False
 
     if not(found):
@@ -119,36 +119,23 @@ def find_2to3():
         # start from the python executable directory
         # and assume that stucture : Python35\Tools\scripts
 
-        logging.info("2to3 is not in the PATH")        
+        logging.info("2to3 is not in the PATH")
 
         script_path = os.path.dirname(sys.executable)
         script_path = script_path+os.sep+"Tools"+os.sep+"scripts"+os.sep+"2to3.py"
+        cmd2to3.append("python")
+        cmd2to3.append(script_path)
     else:
         # 2to3 is in the path, we just store it
-        # 'we already know it won't throw an exception)
         if sys.platform == "win32":
-            script_path = subprocess.check_output("where 2to3.py",shell=True)
+            cmd2to3.append("python 2to3.py")
         else:
-            script_path = subprocess.check_output("which 2to3",shell=True)
+            cmd2to3.append("2to3")
 
-    if os.path.exists(script_path):        
-        path2to3 = script_path
-        # now we can contruct the command we will use
-        if sys.platform == "win32":
-            # on windows, 2to3 is a python script : 2to3.py
-            # so we call it from python
-            cmd2to3.append("python")
-        
-        # we can now append the complete path of 2to3
-        # we will add the others later
-        cmd2to3.append(path2to3)
+    # options for 2to3
+    cmd2to3.append("--nobackups")
+    cmd2to3.append("--write")
 
-        # options
-        cmd2to3.append("--nobackups")
-        cmd2to3.append("--write")
-    else:
-        logging.error("can not find 2to3 in : %s",script_path)
-            
     logging.info("path2to3: %s",path2to3)
     logging.info("cmd2to3: %s",cmd2to3)
 
@@ -180,13 +167,13 @@ def cell_name_compatibility(ipy_json):
 
 
 
-def convert_ipynb_file(file_path,path2to3,cmd2to3):  
+def convert_ipynb_file(file_path,path2to3,cmd2to3):
     logging.debug("convert_ipynb_file: %s %s %s",file_path,path2to3,cmd2to3)
     ipy_json = None
     #with io.open(argv[1], mode = "rU") as istream:
     with io.open(file_path, mode = "rU") as istream:
-        ipy_json = json.load(istream,strict=False)     
-               
+        ipy_json = json.load(istream,strict=False)
+
     # we need to call it here because it is called from convert_all
     # and we could have multiple versions in a given directory
     cell_name_compatibility(ipy_json)
@@ -202,38 +189,25 @@ def convert_ipynb_file(file_path,path2to3,cmd2to3):
 
 
 
-def convert_py_file(file_path,path2to3,cmd2to3):      
+def convert_py_file(file_path,path2to3,cmd2to3):
     # simpler with basic py files :
 
     # Construct the command
     # WARNING : Python uses object names ~ references
     # Do NOT do : cmd = []; cmd = cmd2to3; cmd.append(file_path)
-    # IT WOULD APPEND TO CMD2TO3    
+    # IT WOULD APPEND TO CMD2TO3
     cmd = cmd2to3.copy()
     cmd.append(file_path)
 
     # Popen requires a string
-    str = ' '.join(cmd) 
+    str = ' '.join(cmd)
 
     # we can now call 2to3 on the content
     # do not show the output
     #subprocess.check_call(cmd, stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
     #subprocess.Popen(str,stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
     # # USE A BLOCKING CALL because already multithreaded above
+    logging.debug("(convert_py_file) cmd: %s",cmd)
     subprocess.check_call(cmd,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
-
-    return 0
-
-
-def test_logging_one_arg(file_path):
-    logger = multiprocessing.get_logger()
-    logger.setLevel(logging.INFO)
-
-    logging.debug("logging test_logging_one_arg debug: %s",file_path)
-    logging.info("logging test_logging_one_arg info: %s",file_path)
-
-    print("PRINT test_logging_one_arg",file_path)
-
-    logger.debug("multiprocessing.get_logger gdf")
 
     return 0

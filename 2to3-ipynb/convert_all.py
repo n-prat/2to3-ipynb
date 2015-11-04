@@ -16,7 +16,7 @@ def main(argv):
     parser = argparse.ArgumentParser()
 
     parser.add_argument("directory")
-    parser.add_argument("--log", dest="logLevel", 
+    parser.add_argument("--log", dest="logLevel",
                         choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'], help="Set the logging level")
 
     args = parser.parse_args()
@@ -36,19 +36,19 @@ def main(argv):
     # Ask for confirmation and show a disclaimer
     print("The files will be overridden.")
     print("MAKE SURE YOU HAVE A BACKUP")
-    print("Are you sure you want to proceed? [y/n]")   
+    print("Are you sure you want to proceed? [y/n]")
     go = False
     try:
         go = strtobool(input().lower())
     except ValueError:
-        print('Please respond with \'y\' or \'n\'.') 
-    
+        print('Please respond with \'y\' or \'n\'.')
+
     if not go:
         print("Aborting...")
         sys.exit(1)
     else:
         print("Proceeding")
-        
+
     path_2to3,cmd_2to3 = convert.find_2to3()
 
     ipynb_files = []
@@ -57,6 +57,7 @@ def main(argv):
     for subdir, dirs, files in os.walk(dir):
         for file in files:
             filename, file_extension = os.path.splitext(file)
+            logging.debug("file: %s, extension: %s",filename,file_extension)
             if file_extension == ".py":
                 full_path = os.path.join(subdir, file)
                 logging.info("found python file: %s",full_path)
@@ -74,7 +75,7 @@ def main(argv):
                 logging.info("ignoring: %s%s",filename,file_extension)
 
     # Let's work
-    cpu = cpu_count()    
+    cpu = cpu_count()
     #cpu = mp.cpu_count()
     logging.info("CPU count : %s",cpu)
 
@@ -89,7 +90,7 @@ def main(argv):
     logging.debug("ipynb files : %s",ipynb_files)
 
     # And then call map
-    p = Pool(cpu)     
+    p = Pool(cpu)
     p.map(partial_py,py_files)
     p.map(partial_ipynb, ipynb_files)
 
@@ -117,7 +118,7 @@ def main(argv):
 
     print("\n *************************** \n")
     print(" Manual conversions could still be needed")
-    print(" Check notes in README.md")    
+    print(" Check notes in README.md")
     print("\n *************************** \n")
 
     return 0
@@ -128,3 +129,6 @@ if __name__ == "__main__":
 
 # TODO do not convert ipynb checkpoints?
 # TODO multiprocessing logging(windows-only issue?)
+# TODO fix linux when calling on only a file
+
+# NOTE multiprocessing logging is working on Linux?!
