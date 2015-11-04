@@ -7,7 +7,8 @@ The conversion is done with *2to3*
 **MAKE SURE YOU HAVE A BACKUP**   
 **The files will be overridden** 
 
-**convert_all *directory***
+**convert_all *directory***  
+(not tested on Linux)  
 
 Will convert every *.py* and *.ipynb* files in *directory* to Python 3   
 *directory* can also be a single file   
